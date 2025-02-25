@@ -1,6 +1,6 @@
 ---
 title: "hw02.Rmd"
-author: "greta-anesko"
+author: "Greta Anesko"
 date: "2025-02-25"
 output: html_document
 ---
@@ -60,4 +60,41 @@ summary(lm3.fit)
 This model that omits *sampsize* has a slightly higher R-squared value than our first model with all variables, meaning ommitting sample size allowed us to explain even more variability, and the model fits the data even better. *clinend* is also even more significant. 
 
 ## Part 2: Logistic Regression
+
+```{r}
+# load data
+data <- read.csv("phil.csv")
+```
+
+```{r}
+# filter data
+data <- data %>%
+  filter(Punxsutawney.Phil == "Full Shadow" | Punxsutawney.Phil == "No Shadow") %>%
+  na.omit()
+
+data$Punxsutawney.Phil = as.factor(data$Punxsutawney.Phil)
+```
+
+```{r}
+# fit overall model
+all <- glm(Punxsutawney.Phil ~ February.Average.Temperature + March.Average.Temperature, family = binomial, data = data)
+summary(all)
+```
+```{r}
+# fit northeast model
+northeast <- glm(Punxsutawney.Phil ~ February.Average.Temperature..Northeast. + March.Average.Temperature..Northeast., family = binomial, data = data)
+summary(northeast)
+```
+```{r}
+# fit midwest model
+midwest <- glm(Punxsutawney.Phil ~ February.Average.Temperature..Midwest. + March.Average.Temperature..Midwest., family = binomial, data = data)
+summary(midwest)
+```
+```{r}
+# fit pennsylvania model
+pa <- glm(Punxsutawney.Phil ~ February.Average.Temperature..Pennsylvania. + March.Average.Temperature..Pennsylvania., family = binomial, data = data)
+summary(pa)
+```
+
+As none of the p values are significant, none of the predictors are statistically significant for any of the regional models, except for the overall average, where the February average temperature is a significant predictor at a significance of 0.1. This means that we have sufficient evidence that the average February temperature is correlated with the log odds of not seeing a shadow. The lack of many significant predictors means that Phil is not very good at his job of predicting spring.
 
