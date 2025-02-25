@@ -1,0 +1,63 @@
+---
+title: "hw02.Rmd"
+author: "greta-anesko"
+date: "2025-02-25"
+output: html_document
+---
+
+```{r}
+# load packages
+library(tidyverse)
+library(ISLR2)
+```
+
+## Part 1: Linear Regression
+
+```{r}
+# load data
+data <- Publication
+```
+
+```{r}
+# filter data to only clinical trials that have been published
+data <- data %>%
+  filter(status == 1)
+```
+
+```{r}
+# fit a linear regression that models impact as a function of all other variables
+lm.fit <- lm(impact ~ ., data = data)
+summary(lm.fit)
+```
+
+We should keep the predictors *time*, for time to publication in months, and *clinend*, for whether the trial focused on a clinical endpoint, as these are the only two predictors that have p values close enough to 0 to be statistically significant. 
+
+```{r}
+# fit a new model with only the predictors we decided to keep
+lm2.fit <- lm(impact ~ time + clinend, data = data)
+summary(lm2.fit)
+```
+Although the R-squared for the new model is lower than the R-squared for the first model, meaning our first model's predictors explained more variability in *impact* than our second model's predictors, our new model now only uses variables that we can be confident are significant predictors for *impact*, and the greater variability explained by the first model likely accounts for some random variability that the non-significant predictors happen to align with.
+
+```{r, warning=False}
+# select numeric variables that are not impact
+num_data <- data %>%
+  select_if(is.numeric) %>%
+  select(-impact)
+
+# compute correlation matrix between numeric variables
+cor(num_data)
+```
+The two highest pairs of correlated variables are *budget* and *sampsize* with a correlation of 0.59, and *clinend* and *sampsize* with a correlation of 0.51. An increase in sample size is positively correlated with an increase in budget, and an increase in sample size is positively correlated with a focus on a clinical endpoint. Neither of these are very highly correlated with each other, so there is not much cause for concern.
+
+```{r}
+# fit another linear regression model that includes all variables except for one in each pair of most highly correlated variables
+# omitting sampsize because it is in both pairs
+lm3.fit <- lm(impact ~ posres+multi+clinend+mech+budget+time, data = data)
+summary(lm3.fit)
+```
+
+This model that omits *sampsize* has a slightly higher R-squared value than our first model with all variables, meaning ommitting sample size allowed us to explain even more variability, and the model fits the data even better. *clinend* is also even more significant. 
+
+## Part 2: Logistic Regression
+
